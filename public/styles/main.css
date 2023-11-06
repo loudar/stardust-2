@@ -1,4 +1,4 @@
-#renderer {
+#renderer, #frame {
     width: 100%;
     height: 100%;
     background: black;
@@ -11,13 +11,4 @@ body, html {
     height: 100%;
     overflow: hidden;
     color: white;
-}
-
-.flex {
-    display: flex;
-    flex-direction: row;
-}
-
-.bar {
-    background: white;
 }

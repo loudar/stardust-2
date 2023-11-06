@@ -15,21 +15,25 @@ export class StardustTemplates {
     }
 
     static bars(data) {
-        const children = [];
-        for (let value of data) {
-            children.push(StardustTemplates.item(value));
-        }
-        return FJS.create("div")
-            .classes("frame", "flex")
-            .children(
-                ...children
-            ).build();
-    }
-
-    static item(value) {
-        return FJS.create("div")
-            .classes("bar")
-            .styles("height", `${value}px`, "width", "1px")
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
+        const canvas = FJS.create("canvas")
+            .styles("width", `${width}px`, "height", `${height}px`)
+            .attributes("width", width, "height", height)
+            .id("frame")
             .build();
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, width, height);
+        const singleWidth = width / data.length;
+        ctx.fillStyle = "#ffffff";
+        for (let i = 0; i < data.length; i++) {
+            const x = (width / data.length) * i;
+            ctx.fillRect(x, height - data[i], singleWidth, data[i]);
+        }
+        const average = data.reduce((acc, val) => acc + val, 0) / data.length;
+        ctx.font = "12px Arial";
+        ctx.fillText(`Average: ${average}`, 10, 50);
+        return canvas;
     }
 }

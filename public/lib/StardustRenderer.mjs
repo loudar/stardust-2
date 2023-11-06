@@ -48,7 +48,12 @@ export class StardustRenderer {
     }
 
     renderVisualFrame(visualizerState) {
-        this.domNode.innerHTML = "";
-        this.domNode.appendChild(StardustTemplates.frame(visualizerState));
+        const frame = document.getElementById("frame");
+        const newFrame = StardustTemplates.frame(visualizerState);
+        if (frame) {
+            this.domNode.replaceChild(newFrame, frame);
+        } else {
+            this.domNode.appendChild(newFrame);
+        }
     }
 }
