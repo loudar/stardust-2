@@ -2,7 +2,14 @@ export class AudioAnalyzer {
     static getFrequencyData(buffer) {
         const data = new Uint8Array(buffer.frequencyBinCount);
         buffer.getByteFrequencyData(data);
-        return data;
+        return AudioAnalyzer.adjustDataLog(data);
+    }
+
+    static adjustDataLog(data) {
+        return data.map((value, index) => {
+            const relative = index / data.length;
+            return value * (1 + relative);
+        });
     }
 
     static getAudioData() {
