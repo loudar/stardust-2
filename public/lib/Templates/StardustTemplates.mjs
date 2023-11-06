@@ -74,7 +74,7 @@ export class StardustTemplates {
             const x = singleCellWidth * col;
             const y = singleHeight * row;
             const lightness = data[i] / maxForColor;
-            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness * lightness);
+            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 3);
             const realY = height - y - singleHeight;
             ctx.fillRect(x + inset, realY + inset, singleCellWidth - (inset * 2), singleHeight - (inset * 2));
         }
@@ -93,7 +93,7 @@ export class StardustTemplates {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, width, height);
         const max = Math.max(...data);
-        const maxForColor = max * 2;
+        const maxForColor = max * 1.5;
         const hueFactor = data.length * 6;
         const hueShift = Math.sin(Date.now() / 1000) * 0.1;
         const center = {
@@ -111,9 +111,9 @@ export class StardustTemplates {
             const yDistance = (height * 0.4) * (data[i] / max);
             const lightness = data[i] / maxForColor;
             const size = (i / data.length) * maxSize * lightness;
-            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness);
+            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 2);
             ctx.beginPath();
-            ctx.arc(center.x + (x * xDistance), center.y + (y * yDistance), Math.max(2, size), 0, 2 * Math.PI);
+            ctx.arc(center.x + (x * xDistance), center.y + (y * yDistance), Math.max(1, size), 0, 2 * Math.PI);
             ctx.fill();
         }
         const average = data.reduce((acc, val) => acc + val, 0) / data.length;
