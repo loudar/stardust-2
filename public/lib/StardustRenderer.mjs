@@ -4,6 +4,7 @@ import {StardustTemplates} from "./Templates/StardustTemplates.mjs";
 export class StardustRenderer {
     domNode = null;
     rendering = false;
+    skippedFrames = 0;
 
     constructor(domNodeId) {
         const domNode = document.getElementById(domNodeId);
@@ -36,6 +37,8 @@ export class StardustRenderer {
     renderFrame(visualizerState) {
         requestAnimationFrame(() => this.renderFrame(visualizerState));
         if (this.rendering) {
+            console.log("Skipping frame");
+            this.skippedFrames++;
             return;
         }
         this.rendering = true;
