@@ -73,36 +73,44 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
+        const insetStep = 1;
         for (let i = 0; i < data.length; i++) {
             const row = Math.floor(i / cols);
             const col = i % cols;
             const x = singleCellWidth * col;
             const y = singleHeight * row;
-            let realY;
-            switch (gridAlignment) {
-            case "bottom":
-                realY = height - y - singleHeight;
-                break;
-            case "top":
-                realY = y;
-                break;
-            case "center":
-            default:
-                if (row % 2 === 0) {
-                    realY = center.y - (singleHeight * 0.125) - y;
-                }  else {
-                    realY = center.y + (singleHeight * 0.125) + y;
-                }
-                break;
-            }
+            let realY = this.getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center);
             const lightness = data[i] / maxForColor;
             const xInset = baseInset + (widthWithoutInset * (1 - lightness) * 0.5);
+            const xInsetRounded = Math.round(xInset / insetStep) * insetStep;
             const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
+            const yInsetRounded = Math.round(yInset / insetStep) * insetStep;
             ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 3);
-            ctx.fillRect(x + xInset, realY + yInset, widthWithoutInset - (xInset * 2), heightWithoutInset - (yInset * 2));
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), heightWithoutInset - (yInsetRounded * 2));
         }
         StardustTemplates.addAverageText(data, ctx);
         return canvas;
+    }
+
+    static getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center) {
+        let realY;
+        switch (gridAlignment) {
+        case "bottom":
+            realY = height - y - singleHeight;
+            break;
+        case "top":
+            realY = y;
+            break;
+        case "center":
+        default:
+            if (row % 2 === 0) {
+                realY = center.y - (singleHeight * 0.125) - y;
+            } else {
+                realY = center.y + (singleHeight * 0.125) + y;
+            }
+            break;
+        }
+        return realY;
     }
 
     static addAverageText(data, ctx) {
