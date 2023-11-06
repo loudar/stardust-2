@@ -11,4 +11,5 @@ Go to [http://localhost:3333/uploadAudio](http://localhost:3333/uploadAudio) to 
 # Controls
 
 `ArrowRight` for next viz
+
 `ArrowLeft` for previous viz
