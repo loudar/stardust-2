@@ -1,5 +1,9 @@
 export class VisualizerState {
     sourceData = [];
     data = [];
-    frameType = "grid";
+    frameType = "circle";
+    effects = ["bloom"];
+    shaders = {};
+    vertexShader = "";
+    fragmentShader = "";
 }
