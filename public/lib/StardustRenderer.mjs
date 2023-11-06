@@ -3,6 +3,7 @@ import {StardustTemplates} from "./Templates/StardustTemplates.mjs";
 
 export class StardustRenderer {
     domNode = null;
+    rendering = false;
 
     constructor(domNodeId) {
         const domNode = document.getElementById(domNodeId);
@@ -34,11 +35,16 @@ export class StardustRenderer {
      */
     renderFrame(visualizerState) {
         requestAnimationFrame(() => this.renderFrame(visualizerState));
+        if (this.rendering) {
+            return;
+        }
+        this.rendering = true;
         visualizerState.value = {
             ...visualizerState.value,
             data: AudioAnalyzer.getFrequencyData(visualizerState.value.dataSource)
         };
         this.renderVisualFrame(visualizerState.value);
+        this.rendering = false;
     }
 
     renderVisualFrame(visualizerState) {
