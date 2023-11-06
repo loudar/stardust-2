@@ -64,19 +64,23 @@ export class StardustTemplates {
         const singleHeight = height / rows;
         const singleCellWidth = width / cols;
         const max = Math.max(...data);
-        const maxForColor = max * 1.5;
+        const maxForColor = max * 1.2;
         const hueFactor = data.length * 6;
         const hueShift = Math.sin(Date.now() / 1000) * 0.1;
-        const inset = 4;
+        const baseInset = 2;
+        const widthWithoutInset = singleCellWidth - (baseInset * 2);
+        const heightWithoutInset = singleHeight - (baseInset * 2);
         for (let i = 0; i < data.length; i++) {
             const row = Math.floor(i / cols);
             const col = i % cols;
             const x = singleCellWidth * col;
             const y = singleHeight * row;
             const lightness = data[i] / maxForColor;
+            const xInset = baseInset + (widthWithoutInset * (1 - lightness) * 0.5);
+            const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
             ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 3);
             const realY = height - y - singleHeight;
-            ctx.fillRect(x + inset, realY + inset, singleCellWidth - (inset * 2), singleHeight - (inset * 2));
+            ctx.fillRect(x + xInset, realY + yInset, widthWithoutInset - (xInset * 2), heightWithoutInset - (yInset * 2));
         }
         const average = data.reduce((acc, val) => acc + val, 0) / data.length;
         ctx.fillStyle = "#ffffff";
