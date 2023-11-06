@@ -46,9 +46,7 @@ export class StardustTemplates {
             const x = (width / data.length) * i;
             ctx.fillRect(x, height - data[i], singleWidth, data[i]);
         }
-        const average = data.reduce((acc, val) => acc + val, 0) / data.length;
-        ctx.font = "12px Arial";
-        ctx.fillText(`Average: ${average}`, 10, 50);
+        StardustTemplates.addAverageText(data, ctx);
         return canvas;
     }
 
@@ -70,23 +68,48 @@ export class StardustTemplates {
         const baseInset = 2;
         const widthWithoutInset = singleCellWidth - (baseInset * 2);
         const heightWithoutInset = singleHeight - (baseInset * 2);
+        const gridAlignment = "center";
+        const center = {
+            x: width / 2,
+            y: height / 2
+        };
         for (let i = 0; i < data.length; i++) {
             const row = Math.floor(i / cols);
             const col = i % cols;
             const x = singleCellWidth * col;
             const y = singleHeight * row;
+            let realY;
+            switch (gridAlignment) {
+            case "bottom":
+                realY = height - y - singleHeight;
+                break;
+            case "top":
+                realY = y;
+                break;
+            case "center":
+            default:
+                if (row % 2 === 0) {
+                    realY = center.y - (singleHeight * 0.125) - y;
+                }  else {
+                    realY = center.y + (singleHeight * 0.125) + y;
+                }
+                break;
+            }
             const lightness = data[i] / maxForColor;
             const xInset = baseInset + (widthWithoutInset * (1 - lightness) * 0.5);
             const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
             ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 3);
-            const realY = height - y - singleHeight;
             ctx.fillRect(x + xInset, realY + yInset, widthWithoutInset - (xInset * 2), heightWithoutInset - (yInset * 2));
         }
+        StardustTemplates.addAverageText(data, ctx);
+        return canvas;
+    }
+
+    static addAverageText(data, ctx) {
         const average = data.reduce((acc, val) => acc + val, 0) / data.length;
         ctx.fillStyle = "#ffffff";
         ctx.font = "12px Arial";
         ctx.fillText(`Average: ${average}`, 10, 50);
-        return canvas;
     }
 
     static circle(data) {
@@ -120,10 +143,7 @@ export class StardustTemplates {
             ctx.arc(center.x + (x * xDistance), center.y + (y * yDistance), Math.max(1, size), 0, 2 * Math.PI);
             ctx.fill();
         }
-        const average = data.reduce((acc, val) => acc + val, 0) / data.length;
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "12px Arial";
-        ctx.fillText(`Average: ${average}`, 10, 50);
+        StardustTemplates.addAverageText(data, ctx);
         return canvas;
     }
 }
