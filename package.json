@@ -1,0 +1,20 @@
+{
+  "name": "stardust-2",
+  "version": "2.0.0",
+  "description": "A music visualizer",
+  "main": "main.mjs",
+  "scripts": {
+    "start": "node --experimental-modules main.mjs"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint": "^8.43.0"
+  }
+}

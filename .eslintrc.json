@@ -1,0 +1,45 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "import",
+    "node"
+  ],
+  "rules": {
+    "no-case-declarations": "off",
+    "indent": [
+      "error",
+      4
+    ],
+    "linebreak-style": [
+      "error",
+      "windows"
+    ],
+    "quotes": [
+      "error",
+      "double"
+    ],
+    "semi": [
+      "error",
+      "always"
+    ],
+    "node/file-extension-in-import": [
+      "error",
+      "always",
+      {
+        "tryExtensions": [
+          ".js",
+          ".json",
+          ".node"
+        ]
+      }
+    ]
+  }
+}
