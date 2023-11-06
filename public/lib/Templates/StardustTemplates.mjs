@@ -100,7 +100,6 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
-        const minSide = Math.min(width, height);
         const maxSize = 15;
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
@@ -108,12 +107,13 @@ export class StardustTemplates {
             }
             const x = Math.sin(i);
             const y = Math.cos(i);
-            const distance = (minSide * 0.4) * (data[i] / max);
+            const xDistance = (width * 0.4) * (data[i] / max);
+            const yDistance = (height * 0.4) * (data[i] / max);
             const lightness = data[i] / maxForColor;
             const size = (i / data.length) * maxSize * lightness;
             ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness);
             ctx.beginPath();
-            ctx.arc(center.x + (x * distance), center.y + (y * distance), Math.max(1, size), 0, 2 * Math.PI);
+            ctx.arc(center.x + (x * xDistance), center.y + (y * yDistance), Math.max(2, size), 0, 2 * Math.PI);
             ctx.fill();
         }
         const average = data.reduce((acc, val) => acc + val, 0) / data.length;
