@@ -6,9 +6,9 @@ export class AudioAnalyzer {
         const mode = AudioAnalyzer.getFrequencyMode(newData);
         switch (mode) {
         case "high":
-            return newData.slice(newData.length / 2);
+            return newData.slice(Math.floor(newData.length * 0.75));
         case "low":
-            return newData.slice(0, newData.length / 2);
+            return newData.slice(0, Math.floor(newData.length * 0.75));
         default:
             return newData;
         }

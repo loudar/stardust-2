@@ -68,7 +68,7 @@ export class StardustTemplates {
         const baseInset = 2;
         const widthWithoutInset = singleCellWidth - (baseInset * 2);
         const heightWithoutInset = singleHeight - (baseInset * 2);
-        const gridAlignment = "center";
+        const gridAlignment = "bottom";
         const center = {
             x: width / 2,
             y: height / 2
@@ -85,7 +85,8 @@ export class StardustTemplates {
             const xInsetRounded = Math.round(xInset / insetStep) * insetStep;
             const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
             const yInsetRounded = Math.round(yInset / insetStep) * insetStep;
-            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift, lightness ** 3);
+            const hueShiftByLoudness = lightness * 0.5;
+            ctx.fillStyle = Color.rainbow((i / hueFactor) + hueShift + hueShiftByLoudness, lightness ** 3);
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), heightWithoutInset - (yInsetRounded * 2));
         }
         StardustTemplates.addAverageText(data, ctx);
