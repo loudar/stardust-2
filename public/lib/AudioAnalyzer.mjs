@@ -8,7 +8,7 @@ export class AudioAnalyzer {
 
     static adjustDataLog(data) {
         return data.map((value, index) => {
-            const relative = (index * 4) / data.length;
+            const relative = (index * 3.5) / data.length;
             return value * (1 + relative);
         });
     }

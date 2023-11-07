@@ -92,7 +92,7 @@ export class StardustTemplates {
         const xInsetRounded = Math.round(xInset / insetStep) * insetStep;
         const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
         const yInsetRounded = Math.round(yInset / insetStep) * insetStep;
-        if (lightness < 0.5) {
+        if (lightness < 0.7) {
             const borderThickness = 2;
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), borderThickness);
