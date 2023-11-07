@@ -42,7 +42,6 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
-        const insetStep = 1;
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
                 continue;
@@ -58,7 +57,7 @@ export class StardustTemplates {
             switch (type) {
             case "grid":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                this.renderGridCell(ctx, i, data, width, height, center, lightness, insetStep, 2);
+                this.renderGridCell(ctx, i, data, width, height, center, lightness, 1, 2);
                 break;
             case "circle":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 2);
@@ -68,12 +67,29 @@ export class StardustTemplates {
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
                 this.renderRectangle(ctx, i, data, width, height, lightness);
                 break;
+            case "spiral":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 5);
+                this.renderSpiral(ctx, i, data, width, height, lightness, center);
+                break;
             }
         }
         if (debug) {
             StardustTemplates.addDebugInfo(data, ctx);
         }
         return canvas;
+    }
+
+    static renderSpiral(ctx, i, data, width, height, lightness, center) {
+        const indexFactor = i / data.length;
+        const wavelength = (1 - indexFactor) ** 2;
+        const timeFactor = Date.now() / 5000;
+        const maxSide = Math.max(width, height);
+        const x = center.x + (Math.sin(i + timeFactor) * maxSide * 0.5 * wavelength);
+        const y = center.y + (Math.cos(i + timeFactor) * maxSide * 0.5 * wavelength);
+        const size = 25 * lightness * Math.max(wavelength, 0.05);
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
+        ctx.fill();
     }
 
     static renderGridCell(ctx, i, data, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
