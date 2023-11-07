@@ -4,6 +4,7 @@ export class KeyboardHandler {
     hotkeys = {
         nextFrameType: ["ArrowRight"],
         previousFrameType: ["ArrowLeft"],
+        toggle3D: [" "],
     };
 
     constructor(visualizerState) {
@@ -12,7 +13,6 @@ export class KeyboardHandler {
 
     handleKeyDown(event) {
         const key = event.key;
-        let newFrameType;
         if (this.hotkeys.nextFrameType.includes(key)) {
             this.visualizerState.value = {
                 ...this.visualizerState.value,
@@ -23,7 +23,23 @@ export class KeyboardHandler {
                 ...this.visualizerState.value,
                 frameType: this.previousFrameType()
             };
+        } else if (this.hotkeys.toggle3D.includes(key)) {
+            this.visualizerState.value = {
+                ...this.visualizerState.value,
+                renderType: this.toggle3D()
+            };
         }
+    }
+
+    toggle3D() {
+        const renderTypes = ValidVisualizerState.renderTypes;
+        const currentRenderType = this.visualizerState.value.renderType;
+        const currentIndex = renderTypes.indexOf(currentRenderType);
+        let newIndex = currentIndex + 1;
+        if (newIndex >= renderTypes.length) {
+            newIndex = 0;
+        }
+        return renderTypes[newIndex];
     }
 
     nextFrameType() {

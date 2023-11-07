@@ -77,6 +77,7 @@ export class StardustTemplates {
         if (debug) {
             StardustTemplates.addDebugText3D(`Elements in scene: ${window.scene.children.length}`);
         }
+        window.renderer.domElement.id = "frame";
         return window.renderer.domElement;
     }
 
