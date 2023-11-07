@@ -1,7 +1,7 @@
 import {FJS} from "@targoninc/fjs";
 import {Color} from "../Color.mjs";
 import * as THREE from "three";
-import {OrbitControls, TextGeometry} from "three/addons";
+import {TextGeometry} from "three/addons";
 
 export class StardustTemplates {
     /**
@@ -36,7 +36,7 @@ export class StardustTemplates {
         const hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
         switch (renderType) {
         case "3D":
-            return StardustTemplates.frame3D(data, debug, "bars", hueShiftByTime, max, maxForColor);
+            return StardustTemplates.frame3D(data, debug, "grid", hueShiftByTime, max, maxForColor);
         case "2D":
         default:
             return StardustTemplates.frame2D(data, debug, type, hueShiftByTime, max, maxForColor);
@@ -47,12 +47,10 @@ export class StardustTemplates {
         this.initialize3dFrame();
         const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
         const materials = [];
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
         for (let i = 0; i < data.length; i++) {
             if (!data[i] || data[i] === 0) {
-                continue;
-            }
-
-            if (i % 2 !== 0) {
                 continue;
             }
 
@@ -69,17 +67,31 @@ export class StardustTemplates {
                 materials.push(material);
                 this.render3DBar(i, data, boxGeometry, material);
                 break;
+            case "grid":
+                const material2 = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
+                materials.push(material2);
+                this.render3DGridItem(i, data, height, width, boxGeometry, material2);
+                break;
             }
         }
 
+        let cameraRadius, positionByTime;
         switch (type) {
         case "bars":
-            const cameraRadius = 500;
-            const positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            cameraRadius = 500;
+            positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.y = positionByTime.y;
             window.camera.position.x = 0;
             window.camera.lookAt(new THREE.Vector3(0, 0, 0));
+            break;
+        case "grid":
+            cameraRadius = height * 0.5;
+            positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            window.camera.position.z = positionByTime.x;
+            window.camera.position.x = positionByTime.y;
+            window.camera.position.y = 500;
+            window.camera.lookAt(new THREE.Vector3(0, -200, 0));
             break;
         }
 
@@ -101,6 +113,29 @@ export class StardustTemplates {
         const x = Math.sin(time) * radius;
         const y = Math.cos(time) * radius;
         return {x, y};
+    }
+
+    static render3DGridItem(i, data, height, width, geometry, material) {
+        const cube = new THREE.Mesh(geometry, material);
+        const rows = Math.floor(Math.sqrt(data.length));
+        const cols = Math.ceil(data.length / rows);
+        const singleHeight = height / rows;
+        const singleCellWidth = height / cols;
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const x = singleCellWidth * col;
+        const y = singleHeight * row;
+        const xStart = -height / 2;
+        const yStart = -height / 2;
+        const sizeModifier = 100;
+        const baseInset = singleHeight * 0.33;
+        cube.position.x = xStart + x + baseInset;
+        cube.position.z = yStart + y + baseInset;
+        cube.position.y = 0;
+        cube.scale.y = (data[i] / 100) * sizeModifier;
+        cube.scale.z = singleHeight - (baseInset * 2);
+        cube.scale.x = singleCellWidth - (baseInset * 2);
+        window.scene.add(cube);
     }
 
     static render3DBar(i, data, geometry, material) {
