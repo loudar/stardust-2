@@ -54,16 +54,18 @@ export class StardustTemplates {
                 hueShiftByLoudness = 0;
             }
             const hueShiftByIndex = Math.PI * (i / data.length) * 0.1;
-            ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
 
             switch (type) {
             case "grid":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
                 this.renderGridCell(ctx, i, data, width, height, center, lightness, insetStep, 2);
                 break;
             case "circle":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 2);
                 this.renderCircle(ctx, i, data, width, height, max, 15, lightness, center);
                 break;
             case "bars":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
                 this.renderRectangle(ctx, i, data, width, height, lightness);
                 break;
             }
