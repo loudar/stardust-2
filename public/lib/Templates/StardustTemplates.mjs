@@ -92,7 +92,7 @@ export class StardustTemplates {
         ctx.beginPath();
         ctx.arc(x, y, size, 0, 2 * Math.PI);
         ctx.fill();
-        if (average > 0.6 && lightness > 0.75) {
+        if (average > 0.68 && lightness > 0.8) {
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(center.x, center.y);
