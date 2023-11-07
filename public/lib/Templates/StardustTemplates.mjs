@@ -92,7 +92,15 @@ export class StardustTemplates {
         const xInsetRounded = Math.round(xInset / insetStep) * insetStep;
         const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
         const yInsetRounded = Math.round(yInset / insetStep) * insetStep;
-        ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), heightWithoutInset - (yInsetRounded * 2));
+        if (lightness < 0.5) {
+            const borderThickness = 2;
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), borderThickness);
+            ctx.fillRect(x + xInsetRounded, realY + heightWithoutInset - yInsetRounded - borderThickness, widthWithoutInset - (xInsetRounded * 2), borderThickness);
+            ctx.fillRect(x + widthWithoutInset - xInsetRounded - borderThickness, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
+        } else {
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), heightWithoutInset - (yInsetRounded * 2));
+        }
     }
 
     static getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center) {
