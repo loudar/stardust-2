@@ -1,7 +1,7 @@
 import {FJS} from "@targoninc/fjs";
 import {Color} from "../Color.mjs";
 import * as THREE from "three";
-import {TextGeometry} from "three/addons";
+import {OrbitControls, TextGeometry} from "three/addons";
 
 export class StardustTemplates {
     /**
@@ -52,7 +52,7 @@ export class StardustTemplates {
                 continue;
             }
 
-            if (i % 4 !== 0) {
+            if (i % 2 !== 0) {
                 continue;
             }
 
@@ -74,24 +74,43 @@ export class StardustTemplates {
 
         switch (type) {
         case "bars":
-            window.camera.position.z = 400;
+            const cameraRadius = 500;
+            const positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            window.camera.position.z = positionByTime.x;
+            window.camera.position.y = positionByTime.y;
+            window.camera.position.x = 0;
+            window.camera.lookAt(new THREE.Vector3(0, 0, 0));
             break;
         }
 
         window.renderer.render(window.scene, window.camera);
         if (debug) {
-            StardustTemplates.addDebugText3D(`Elements in scene: ${window.scene.children.length}`);
+            StardustTemplates.add3DGrid();
         }
         materials.forEach(material => material.dispose());
         window.renderer.domElement.id = "frame";
         return window.renderer.domElement;
     }
 
+    static add3DGrid() {
+        const gridHelper = new THREE.GridHelper(1000, 100, 0xffffff, 0xffffff);
+        window.scene.add(gridHelper);
+    }
+
+    static getCirclePositionByTime(time, radius) {
+        const x = Math.sin(time) * radius;
+        const y = Math.cos(time) * radius;
+        return {x, y};
+    }
+
     static render3DBar(i, data, geometry, material) {
         const cube = new THREE.Mesh(geometry, material);
-        const sizeModifier = 100;
-        cube.position.x = -i + (data.length / 2);
+        const sizeModifier = 50;
+        const boxWidth = 2;
+        const positionModifier = boxWidth;
+        cube.position.x = (-i + (data.length / 2)) * positionModifier;
         cube.scale.y = (data[i] / 100) * sizeModifier;
+        cube.scale.z = (data[i] / 100) * sizeModifier;
         window.scene.add(cube);
     }
 
@@ -99,7 +118,7 @@ export class StardustTemplates {
         const width = document.body.clientWidth;
         const height = document.body.clientHeight;
         if (!window.threeJsInitialized) {
-            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000);
+            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
             window.renderer = new THREE.WebGLRenderer();
             window.threeJsInitialized = true;
         }
