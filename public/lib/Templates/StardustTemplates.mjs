@@ -1,5 +1,6 @@
 import {FJS} from "https://fjs.targoninc.com/f.js";
 import {Color} from "../Color.mjs";
+import * as THREE from "https://threejs.org/build/three.module.js";
 
 export class StardustTemplates {
     /**
@@ -8,7 +9,7 @@ export class StardustTemplates {
      */
     static frame(visualizerState) {
         let frame;
-        frame = StardustTemplates.frame2D(visualizerState.data, visualizerState.debug, visualizerState.frameType);
+        frame = StardustTemplates.genericFrame(visualizerState.data, visualizerState.debug, visualizerState.renderType, visualizerState.frameType);
         return frame;
     }
 
@@ -27,17 +28,108 @@ export class StardustTemplates {
         ctx.fillRect(x, height - singleHeight, singleWidth, singleHeight);
     }
 
-    static frame2D(data, debug, type = "grid") {
+    static genericFrame(data, debug, renderType = "3D", type = "grid") {
+        const max = Math.max(...data, 1);
+        const maxForColor = max * 1.2;
+        const secondsPerCycle = 5;
+        const hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
+        switch (renderType) {
+        case "3D":
+            return StardustTemplates.frame3D(data, debug, "bars", hueShiftByTime, max, maxForColor);
+        case "2D":
+        default:
+            return StardustTemplates.frame2D(data, debug, type, hueShiftByTime, max, maxForColor);
+        }
+    }
+
+    static frame3D(data, debug, type = "bars", hueShiftByTime = 0, max = 255, maxForColor = 1) {
+        this.initialize3dFrame();
+        for (let i = 0; i < data.length; i++) {
+            if (!data[i] || data[i] === 0) {
+                continue;
+            }
+
+            if (i % 5 !== 0) {
+                continue;
+            }
+
+            const lightness = data[i] / maxForColor;
+            let hueShiftByLoudness = Math.PI * (data[i] / maxForColor) * 0.3;
+            if (isNaN(hueShiftByLoudness)) {
+                hueShiftByLoudness = 0;
+            }
+            const hueShiftByIndex = Math.PI * (i / data.length) * 0.1;
+
+            switch (type) {
+            case "bars":
+                this.render3DBar(i, data, lightness, hueShiftByTime + hueShiftByIndex + hueShiftByLoudness);
+                break;
+            }
+        }
+
+        switch (type) {
+        case "bars":
+            window.camera.position.z = 500;
+            break;
+        }
+
+        window.renderer.render(window.scene, window.camera);
+        if (debug) {
+            StardustTemplates.addDebugText3D(`Elements in scene: ${window.scene.children.length}`);
+        }
+        return window.renderer.domElement;
+    }
+
+    static addDebugText3D(text) {
+        const textGeometry = new TextGeometry(text, {
+            font: window.font,
+            size: 20,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 10,
+            bevelSize: 8,
+            bevelOffset: 0,
+            bevelSegments: 5
+        });
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const mesh = new THREE.Mesh(textGeometry, textMaterial);
+        mesh.position.x = -50;
+        mesh.position.y = 50;
+        mesh.position.z = 0;
+        window.scene.add(mesh);
+    }
+
+    static render3DBar(i, data, lightness, hueShift) {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShift, lightness ** 3, true) });
+        const cube = new THREE.Mesh(geometry, material);
+        const sizeModifier = 100;
+        cube.position.x = -i + (data.length / 2);
+        cube.scale.y = (data[i] / 100) * sizeModifier;
+        window.scene.add(cube);
+    }
+
+    static initialize3dFrame() {
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
+        if (!window.threeJsInitialized) {
+            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000);
+            window.renderer = new THREE.WebGLRenderer();
+            window.threeJsInitialized = true;
+        }
+        window.scene = new THREE.Scene();
+        window.renderer.clear();
+        window.renderer.setSize(width, height);
+    }
+
+    static frame2D(data, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
         const width = document.body.clientWidth;
         const height = document.body.clientHeight;
         const canvas = StardustTemplates.canvas(width, height);
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, width, height);
-        const max = Math.max(...data, 1);
-        const maxForColor = max * 1.2;
-        const secondsPerCycle = 5;
-        const hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
         const center = {
             x: width / 2,
             y: height / 2
@@ -74,7 +166,7 @@ export class StardustTemplates {
             }
         }
         if (debug) {
-            StardustTemplates.addDebugInfo(data, ctx);
+            StardustTemplates.addDebugInfo2D(data, ctx);
         }
         return canvas;
     }
@@ -142,7 +234,7 @@ export class StardustTemplates {
         return realY;
     }
 
-    static addDebugInfo(data, ctx) {
+    static addDebugInfo2D(data, ctx) {
         StardustTemplates.addAverageText(data, ctx);
     }
 
