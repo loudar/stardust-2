@@ -42,7 +42,6 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
-        const average = (data.reduce((acc, val) => acc + val, 0) / data.length) / max;
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
                 continue;
@@ -70,7 +69,7 @@ export class StardustTemplates {
                 break;
             case "spiral":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 5);
-                this.renderSpiral(ctx, i, data, width, height, lightness, center, average);
+                this.renderSpiral(ctx, i, data, width, height, lightness, center);
                 break;
             }
         }
@@ -80,24 +79,19 @@ export class StardustTemplates {
         return canvas;
     }
 
-    static renderSpiral(ctx, i, data, width, height, lightness, center, average) {
+    static renderSpiral(ctx, i, data, width, height, lightness, center) {
         ctx.strokeStyle = ctx.fillStyle;
         const indexFactor = i / data.length;
-        const wavelength = (1 - indexFactor) ** 2;
+        const wavelength = (1 - indexFactor);
         const timeFactor = Date.now() / 5000;
         const maxSide = Math.max(width, height);
         const x = center.x + (Math.sin(i + timeFactor) * maxSide * 0.5 * wavelength);
         const y = center.y + (Math.cos(i + timeFactor) * maxSide * 0.5 * wavelength);
-        const size = 25 * lightness * Math.max(wavelength, 0.05);
+        const inverseExp = 1 - ((1 - lightness) ** 2);
+        const size = 25 * inverseExp * Math.max(wavelength, 0.05);
         ctx.beginPath();
         ctx.arc(x, y, size, 0, 2 * Math.PI);
         ctx.fill();
-        if (average > 0.68 && lightness > 0.8) {
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(center.x, center.y);
-            ctx.stroke();
-        }
     }
 
     static renderGridCell(ctx, i, data, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
