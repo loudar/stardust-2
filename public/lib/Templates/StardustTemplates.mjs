@@ -1,6 +1,7 @@
-import {FJS} from "https://fjs.targoninc.com/f.js";
+import {FJS} from "@targoninc/fjs";
 import {Color} from "../Color.mjs";
-import * as THREE from "https://threejs.org/build/three.module.js";
+import * as THREE from "three";
+import {TextGeometry} from "three/addons";
 
 export class StardustTemplates {
     /**

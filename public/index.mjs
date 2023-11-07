@@ -1,5 +1,5 @@
 import {StardustRenderer} from "./lib/StardustRenderer.mjs";
-import {FjsObservable} from "https://fjs.targoninc.com/f.js";
+import {FjsObservable} from "@targoninc/fjs";
 import {VisualizerState} from "./lib/VisualizerState.mjs";
 import {KeyboardHandler} from "./lib/KeyboardHandler.mjs";
 
