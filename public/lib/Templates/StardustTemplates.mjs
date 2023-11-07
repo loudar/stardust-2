@@ -45,12 +45,14 @@ export class StardustTemplates {
 
     static frame3D(data, debug, type = "bars", hueShiftByTime = 0, max = 255, maxForColor = 1) {
         this.initialize3dFrame();
+        const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const materials = [];
         for (let i = 0; i < data.length; i++) {
             if (!data[i] || data[i] === 0) {
                 continue;
             }
 
-            if (i % 5 !== 0) {
+            if (i % 4 !== 0) {
                 continue;
             }
 
@@ -63,14 +65,16 @@ export class StardustTemplates {
 
             switch (type) {
             case "bars":
-                this.render3DBar(i, data, lightness, hueShiftByTime + hueShiftByIndex + hueShiftByLoudness);
+                const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
+                materials.push(material);
+                this.render3DBar(i, data, boxGeometry, material);
                 break;
             }
         }
 
         switch (type) {
         case "bars":
-            window.camera.position.z = 500;
+            window.camera.position.z = 400;
             break;
         }
 
@@ -78,22 +82,17 @@ export class StardustTemplates {
         if (debug) {
             StardustTemplates.addDebugText3D(`Elements in scene: ${window.scene.children.length}`);
         }
+        materials.forEach(material => material.dispose());
         window.renderer.domElement.id = "frame";
         return window.renderer.domElement;
     }
 
-    static render3DBar(i, data, lightness, hueShift) {
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShift, lightness ** 3, true) });
+    static render3DBar(i, data, geometry, material) {
         const cube = new THREE.Mesh(geometry, material);
         const sizeModifier = 100;
         cube.position.x = -i + (data.length / 2);
         cube.scale.y = (data[i] / 100) * sizeModifier;
         window.scene.add(cube);
-        setTimeout(() => {
-            cube.geometry.dispose();
-            cube.material.dispose();
-        }, 1000);
     }
 
     static initialize3dFrame() {
