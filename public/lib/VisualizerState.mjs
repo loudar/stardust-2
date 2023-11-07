@@ -3,5 +3,5 @@ export class VisualizerState {
     data = [];
     frameType = "grid";
     renderType = "2D";
-    debug = true;
+    debug = false;
 }
