@@ -82,6 +82,33 @@ export class StardustTemplates {
         return window.renderer.domElement;
     }
 
+    static render3DBar(i, data, lightness, hueShift) {
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShift, lightness ** 3, true) });
+        const cube = new THREE.Mesh(geometry, material);
+        const sizeModifier = 100;
+        cube.position.x = -i + (data.length / 2);
+        cube.scale.y = (data[i] / 100) * sizeModifier;
+        window.scene.add(cube);
+        setTimeout(() => {
+            cube.geometry.dispose();
+            cube.material.dispose();
+        }, 1000);
+    }
+
+    static initialize3dFrame() {
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
+        if (!window.threeJsInitialized) {
+            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000);
+            window.renderer = new THREE.WebGLRenderer();
+            window.threeJsInitialized = true;
+        }
+        window.scene = new THREE.Scene();
+        window.renderer.clear();
+        window.renderer.setSize(width, height);
+    }
+
     static addDebugText3D(text) {
         const textGeometry = new TextGeometry(text, {
             font: window.font,
@@ -100,29 +127,6 @@ export class StardustTemplates {
         mesh.position.y = 50;
         mesh.position.z = 0;
         window.scene.add(mesh);
-    }
-
-    static render3DBar(i, data, lightness, hueShift) {
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShift, lightness ** 3, true) });
-        const cube = new THREE.Mesh(geometry, material);
-        const sizeModifier = 100;
-        cube.position.x = -i + (data.length / 2);
-        cube.scale.y = (data[i] / 100) * sizeModifier;
-        window.scene.add(cube);
-    }
-
-    static initialize3dFrame() {
-        const width = document.body.clientWidth;
-        const height = document.body.clientHeight;
-        if (!window.threeJsInitialized) {
-            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 1000);
-            window.renderer = new THREE.WebGLRenderer();
-            window.threeJsInitialized = true;
-        }
-        window.scene = new THREE.Scene();
-        window.renderer.clear();
-        window.renderer.setSize(width, height);
     }
 
     static frame2D(data, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
