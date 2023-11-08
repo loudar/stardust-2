@@ -33,10 +33,21 @@ export class StardustTemplates {
         const max = Math.max(...data, 1);
         const maxForColor = max * 1.2;
 
-        const currentAverage = data.reduce((acc, val) => acc + val, 0) / data.length;
-        const previousAverage = window.previousData ? window.previousData.reduce((acc, val) => acc + val, 0) / window.previousData.length : 0;
-        const isPeak = currentAverage > previousAverage * 1.2;
-        window.previousData = data;
+        const peakRelevantData = data;
+        const currentAverage = peakRelevantData.reduce((acc, val) => acc + val, 0) / peakRelevantData.length;
+        let previousFrames = window.previousFrames || [];
+
+        if (previousFrames.length === 5) {
+            previousFrames.shift();
+        }
+        previousFrames.push(currentAverage);
+
+        window.previousFrames = previousFrames;
+
+        const previousAverage = previousFrames.reduce((acc, val) => acc + val, 0) / previousFrames.length;
+
+        const isPeak = currentAverage > previousAverage * 1.1;
+        window.previousAverage = currentAverage;
 
         if (!window.peakSwitch) {
             window.peakSwitch = false;
@@ -48,7 +59,7 @@ export class StardustTemplates {
         const secondsPerCycle = 20;
         let hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
         if (window.peakSwitch) {
-            hueShiftByTime += Math.PI * 2;
+            hueShiftByTime += Math.PI;
         }
         switch (renderType) {
         case "3D":
@@ -157,8 +168,7 @@ export class StardustTemplates {
     static render3DBar(i, data, geometry, material) {
         const cube = new THREE.Mesh(geometry, material);
         const sizeModifier = 50;
-        const boxWidth = 2;
-        const positionModifier = boxWidth;
+        const positionModifier = 2;
         cube.position.x = (-i + (data.length / 2)) * positionModifier;
         cube.scale.y = (data[i] / 100) * sizeModifier;
         cube.scale.z = (data[i] / 100) * sizeModifier;
@@ -210,23 +220,6 @@ export class StardustTemplates {
             y: height / 2
         };
 
-        switch (type) {
-        case "grid":
-            const rowCount = Math.floor(Math.sqrt(data.length));
-            const singleHeight = height / rowCount;
-            for (let i = 0; i < rowCount; i++) {
-                const row = data.slice(i * rowCount, (i + 1) * rowCount);
-                const averageInRow = row.reduce((acc, val) => acc + val, 0) / row.length;
-                const max = Math.max(...row);
-                const lightness = averageInRow / max;
-                const y = (height / rowCount) * i;
-                let realY = this.getGridYPositionByAlignment("bottom", height, y, singleHeight, row, center);
-                ctx.fillStyle = Color.rainbow(hueShiftByTime, lightness * 0.02);
-                ctx.fillRect(0, realY, width, singleHeight);
-            }
-            break;
-        }
-
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
                 continue;
@@ -237,7 +230,7 @@ export class StardustTemplates {
             if (isNaN(hueShiftByLoudness)) {
                 hueShiftByLoudness = 0;
             }
-            const hueShiftByIndex = Math.PI * (i / data.length) * 0.1;
+            const hueShiftByIndex = Math.PI * (i / data.length) * 0.02;
 
             switch (type) {
             case "grid":
@@ -290,12 +283,8 @@ export class StardustTemplates {
         const col = i % cols;
         const x = singleCellWidth * col;
         const y = singleHeight * row;
-        let modifyWidth = i % 2 === 0;
-        let modifyHeight = !modifyWidth;
-        if (window.peakSwitch) {
-            modifyHeight = !modifyHeight;
-            modifyWidth = !modifyWidth;
-        }
+        let modifyWidth = true;
+        let modifyHeight = true;
         let realY = this.getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center);
         let xInset, xInsetRounded;
         if (modifyWidth) {
