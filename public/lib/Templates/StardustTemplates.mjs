@@ -307,9 +307,12 @@ export class StardustTemplates {
     static renderCircle(ctx, i, data, width, height, max, maxSize, lightness, center) {
         const x = Math.sin(i);
         const y = Math.cos(i);
-        const xDistance = (width * 0.4) * (data[i] / max);
-        const yDistance = (height * 0.4) * (data[i] / max);
-        const size = (i / data.length) * maxSize * lightness;
+        const indexFactor = i / data.length;
+        const wavelength = (1 - indexFactor);
+        const xDistance = (width * 0.4) * (data[i] / max) * (0.5 + (0.5 * indexFactor));
+        const yDistance = (height * 0.4) * (data[i] / max) * (0.5 + (0.5 * indexFactor));
+        const inverseExp = 1 - ((1 - lightness) ** 2);
+        const size = 15 * inverseExp * Math.max(wavelength, 0.05);
         ctx.beginPath();
         ctx.arc(center.x + (x * xDistance), center.y + (y * yDistance), Math.max(1, size), 0, 2 * Math.PI);
         ctx.fill();
