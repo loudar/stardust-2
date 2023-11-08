@@ -32,8 +32,24 @@ export class StardustTemplates {
     static genericFrame(data, debug, renderType = "3D", type = "grid") {
         const max = Math.max(...data, 1);
         const maxForColor = max * 1.2;
-        const secondsPerCycle = 5;
-        const hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
+
+        const currentAverage = data.reduce((acc, val) => acc + val, 0) / data.length;
+        const previousAverage = window.previousData ? window.previousData.reduce((acc, val) => acc + val, 0) / window.previousData.length : 0;
+        const isPeak = currentAverage > previousAverage * 1.2;
+        window.previousData = data;
+
+        if (!window.peakSwitch) {
+            window.peakSwitch = false;
+        }
+        if (isPeak) {
+            window.peakSwitch = !window.peakSwitch;
+        }
+
+        const secondsPerCycle = 20;
+        let hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
+        if (window.peakSwitch) {
+            hueShiftByTime += Math.PI * 2;
+        }
         switch (renderType) {
         case "3D":
             return StardustTemplates.frame3D(data, debug, "grid", hueShiftByTime, max, maxForColor);
@@ -193,6 +209,24 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
+
+        switch (type) {
+        case "grid":
+            const rowCount = Math.floor(Math.sqrt(data.length));
+            const singleHeight = height / rowCount;
+            for (let i = 0; i < rowCount; i++) {
+                const row = data.slice(i * rowCount, (i + 1) * rowCount);
+                const averageInRow = row.reduce((acc, val) => acc + val, 0) / row.length;
+                const max = Math.max(...row);
+                const lightness = averageInRow / max;
+                const y = (height / rowCount) * i;
+                let realY = this.getGridYPositionByAlignment("bottom", height, y, singleHeight, row, center);
+                ctx.fillStyle = Color.rainbow(hueShiftByTime, lightness * 0.02);
+                ctx.fillRect(0, realY, width, singleHeight);
+            }
+            break;
+        }
+
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
                 continue;
@@ -256,12 +290,28 @@ export class StardustTemplates {
         const col = i % cols;
         const x = singleCellWidth * col;
         const y = singleHeight * row;
+        let modifyWidth = i % 2 === 0;
+        let modifyHeight = !modifyWidth;
+        if (window.peakSwitch) {
+            modifyHeight = !modifyHeight;
+            modifyWidth = !modifyWidth;
+        }
         let realY = this.getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center);
-        const xInset = baseInset + (widthWithoutInset * (1 - lightness) * 0.5);
-        const xInsetRounded = Math.round(xInset / insetStep) * insetStep;
-        const yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
-        const yInsetRounded = Math.round(yInset / insetStep) * insetStep;
-        if (lightness < 0.7) {
+        let xInset, xInsetRounded;
+        if (modifyWidth) {
+            xInset = baseInset + (widthWithoutInset * (1 - lightness) * 0.5);
+            xInsetRounded = Math.round(xInset / insetStep) * insetStep;
+        } else {
+            xInsetRounded = 0;
+        }
+        let yInset, yInsetRounded;
+        if (modifyHeight) {
+            yInset = baseInset + (heightWithoutInset * (1 - lightness) * 0.5);
+            yInsetRounded = Math.round(yInset / insetStep) * insetStep;
+        } else {
+            yInsetRounded = 0;
+        }
+        if (lightness < 0.65) {
             const borderThickness = 2;
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), borderThickness);
@@ -309,8 +359,10 @@ export class StardustTemplates {
         const y = Math.cos(i);
         const indexFactor = i / data.length;
         const wavelength = (1 - indexFactor);
-        const xDistance = (width * 0.4) * (data[i] / max) * (0.5 + (0.5 * indexFactor));
-        const yDistance = (height * 0.4) * (data[i] / max) * (0.5 + (0.5 * indexFactor));
+        const minimumDistance = 0.4;
+        const distanceByIndex = minimumDistance + ((1 - minimumDistance) * indexFactor);
+        const xDistance = (width * 0.5) * (data[i] / max) * distanceByIndex;
+        const yDistance = (height * 0.5) * (data[i] / max) * distanceByIndex;
         const inverseExp = 1 - ((1 - lightness) ** 2);
         const size = 15 * inverseExp * Math.max(wavelength, 0.05);
         ctx.beginPath();
