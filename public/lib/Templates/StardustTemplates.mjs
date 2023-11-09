@@ -113,12 +113,13 @@ export class StardustTemplates {
             window.camera.lookAt(new THREE.Vector3(0, 0, 0));
             break;
         case "grid":
-            cameraRadius = height * 0.5;
+            cameraRadius = 0; // height * 0.5;
             positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.x = positionByTime.y;
-            window.camera.position.y = 500;
+            window.camera.position.y = 220;
             window.camera.lookAt(new THREE.Vector3(0, -200, 0));
+            window.camera.rotation.z = Math.PI * (Date.now() / 20000);
             break;
         }
 
@@ -143,6 +144,9 @@ export class StardustTemplates {
     }
 
     static render3DGridItem(i, data, height, width, geometry, material) {
+        if (data[i] < 120) {
+            return;
+        }
         const cube = new THREE.Mesh(geometry, material);
         const rows = Math.floor(Math.sqrt(data.length));
         const cols = Math.ceil(data.length / rows);
@@ -154,8 +158,8 @@ export class StardustTemplates {
         const y = singleHeight * row;
         const xStart = -height / 2;
         const yStart = -height / 2;
-        const sizeModifier = 100;
-        const baseInset = singleHeight * 0.33;
+        const sizeModifier = 50;
+        const baseInset = singleHeight * 0.2;
         cube.position.x = xStart + x + baseInset;
         cube.position.z = yStart + y + baseInset;
         cube.position.y = 0;
