@@ -5,7 +5,15 @@ export class AudioAnalyzer {
         const newData = AudioAnalyzer.adjustDataLog(data);
         let sliced = newData.slice(0, Math.floor(newData.length * 0.75));
         const average = sliced.slice(Math.floor(sliced.length * 0.5)).reduce((a, b) => a + b, 0) / sliced.length;
+        if (!window.below50) {
+            window.below50 = 0;
+        }
         if (average < 50) {
+            window.below50++;
+        } else {
+            window.below50 = 0;
+        }
+        if (window.below50 > 50) {
             sliced = sliced.slice(0, Math.floor(sliced.length * 0.5));
         }
         return sliced;
