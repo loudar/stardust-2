@@ -63,7 +63,7 @@ export class StardustTemplates {
         }
         switch (renderType) {
         case "3D":
-            return StardustTemplates.frame3D(data, debug, "grid", hueShiftByTime, max, maxForColor);
+            return StardustTemplates.frame3D(data, debug, type, hueShiftByTime, max, maxForColor);
         case "2D":
         default:
             return StardustTemplates.frame2D(data, debug, type, hueShiftByTime, max, maxForColor);
@@ -73,6 +73,7 @@ export class StardustTemplates {
     static frame3D(data, debug, type = "bars", hueShiftByTime = 0, max = 255, maxForColor = 1) {
         this.initialize3dFrame();
         const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
         const materials = [];
         const width = document.body.clientWidth;
         const height = document.body.clientHeight;
@@ -89,7 +90,13 @@ export class StardustTemplates {
             const hueShiftByIndex = Math.PI * (i / data.length) * 0.1;
 
             switch (type) {
+            case "spiral":
+                const materialSpiral = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
+                materials.push(materialSpiral);
+                this.render3DSpiral(i, data, sphereGeometry, materialSpiral);
+                break;
             case "bars":
+            case "circle":
                 const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(material);
                 this.render3DBar(i, data, boxGeometry, material);
@@ -104,7 +111,17 @@ export class StardustTemplates {
 
         let cameraRadius, positionByTime;
         switch (type) {
+        case "spiral":
+            cameraRadius = 0; // height * 0.5;
+            positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            window.camera.position.z = positionByTime.x;
+            window.camera.position.x = positionByTime.y;
+            window.camera.position.y = 750;
+            window.camera.lookAt(new THREE.Vector3(0, -200, 0));
+            window.camera.rotation.z = Math.PI * (Date.now() / 20000);
+            break;
         case "bars":
+        case "circle":
             cameraRadius = 500;
             positionByTime = StardustTemplates.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
@@ -176,6 +193,26 @@ export class StardustTemplates {
         cube.position.x = (-i + (data.length / 2)) * positionModifier;
         cube.scale.y = (data[i] / 100) * sizeModifier;
         cube.scale.z = (data[i] / 100) * sizeModifier;
+        window.scene.add(cube);
+    }
+
+    static render3DSpiral(i, data, geometry, material) {
+        const indexFactor = i / data.length;
+        const lightness = data[i] / 255;
+        const wavelength = (1 - indexFactor);
+        const timeFactor = Date.now() / 5000;
+        const maxSide = 2000;
+        const x = Math.sin(i + timeFactor) * maxSide * 0.5 * wavelength;
+        const y = Math.cos(i + timeFactor) * maxSide * 0.5 * wavelength;
+        const inverseExp = 1 - ((1 - lightness) ** 2);
+        const size = 25 * inverseExp * Math.max(wavelength, 0.05);
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.x = x;
+        cube.position.z = y;
+        cube.position.y = lightness * 200;
+        cube.scale.y = size;
+        cube.scale.z = size;
+        cube.scale.x = size;
         window.scene.add(cube);
     }
 
