@@ -93,7 +93,7 @@ export class StardustTemplates {
             case "spiral":
                 const materialSpiral = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(materialSpiral);
-                this.render3DSpiral(i, data, sphereGeometry, materialSpiral);
+                this.render3DSpiral(i, data, lightness, sphereGeometry, materialSpiral);
                 break;
             case "bars":
             case "circle":
@@ -196,9 +196,8 @@ export class StardustTemplates {
         window.scene.add(cube);
     }
 
-    static render3DSpiral(i, data, geometry, material) {
+    static render3DSpiral(i, data, lightness, geometry, material) {
         const indexFactor = i / data.length;
-        const lightness = data[i] / 255;
         const wavelength = (1 - indexFactor);
         const timeFactor = Date.now() / 5000;
         const maxSide = 2000;
