@@ -188,8 +188,8 @@ export class ThreeJsRenderer {
         ctx.fillRect(x + xInset, realY - (value * singleHeight) + actualHeight, singleCellWidth - (2 * xInset), actualHeight);
     }
 
-    static addParticle(type, x, y, z) {
-        window.particles.push({
+    static addParticle(store, type, x, y, z) {
+        store.push({
             type,
             pos: {
                 x, y, z
@@ -202,19 +202,53 @@ export class ThreeJsRenderer {
     }
 
     static renderParticle(ctx, i, data, width, height, center) {
-        window.particles = window.particles ?? [];
-        if (window.particles.length < data.length) {
+        window.particles2d = window.particles2d ?? [];
+        if (window.particles2d.length < data.length) {
             for (let i = 0; i < data.length; i++) {
                 const x = Math.random() * width;
                 const y = Math.random() * height;
-                this.addParticle("circle", x, y, 0);
+                this.addParticle(window.particles2d, "circle", x, y, 0);
             }
         }
 
-        const velocityFactor = 0.3;
         const value = data[i] / 255;
+        const particle = ThreeJsRenderer.getParticleStep(window.particles2d[i], value, width, height, center);
+
+        if (particle.type === "circle") {
+            ctx.beginPath();
+            ctx.arc(particle.pos.x, particle.pos.y, particle.size, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+
+    static render3dParticle(i, data, height, width, geometry, material) {
+        window.particles3d = window.particles3d ?? [];
+        if (window.particles3d.length < data.length) {
+            const zDepth = 400;
+            for (let i = 0; i < data.length; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const z = -(zDepth * 0.5) + (Math.random() * zDepth);
+                this.addParticle(window.particles3d, "circle", x - (width * 0.5), y - (height * 0.5), z);
+            }
+        }
+
+        const value = data[i] / 255;
+        const particle = ThreeJsRenderer.getParticleStep(window.particles3d[i], value, width, height, {x: 0, y: 0});
+
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.x = particle.pos.x;
+        cube.position.z = particle.pos.y;
+        cube.position.y = 0;
+        cube.scale.y = particle.size;
+        cube.scale.z = particle.size;
+        cube.scale.x = particle.size;
+        window.scene.add(cube);
+    }
+
+    static getParticleStep(particle, value, width, height, center) {
+        const velocityFactor = 0.3;
         const veloMod = value * velocityFactor;
-        const particle = window.particles[i];
         particle.pos.x += particle.vel.x * value * 2;
         particle.pos.y += particle.vel.y * value * 2;
         particle.pos.z = 0;
@@ -222,30 +256,25 @@ export class ThreeJsRenderer {
         particle.vel.y += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.z = 0;
         particle.size = 8 * (value ** 2);
-        particle.vel.x = Math.max(Math.min(particle.size, particle.vel.x), -particle.size);
-        particle.vel.y = Math.max(Math.min(particle.size, particle.vel.y), -particle.size);
         const centerForce = 0.00002;
         const screenratio = width / height;
         particle.vel.x += (center.x - particle.pos.x) * centerForce * (1 / screenratio);
         particle.vel.y += (center.y - particle.pos.y) * centerForce * screenratio;
+        particle.vel.x = Math.max(Math.min(particle.size, particle.vel.x), -particle.size);
+        particle.vel.y = Math.max(Math.min(particle.size, particle.vel.y), -particle.size);
 
-        if (particle.pos.x < 0) {
-            particle.pos.x = width;
+        if (particle.pos.x < center.x - (width * 0.5)) {
+            particle.pos.x = center.x + (width * 0.5);
         }
-        if (particle.pos.x > width) {
-            particle.pos.x = 0;
+        if (particle.pos.x > center.x + (width * 0.5)) {
+            particle.pos.x = center.x - (width * 0.5);
         }
-        if (particle.pos.y < 0) {
-            particle.pos.y = height;
+        if (particle.pos.y < center.y - (height * 0.5)) {
+            particle.pos.y = center.y + (height * 0.5);
         }
-        if (particle.pos.y > height) {
-            particle.pos.y = 0;
+        if (particle.pos.y > center.y + (height * 0.5)) {
+            particle.pos.y = center.y - (height * 0.5);
         }
-
-        if (particle.type === "circle") {
-            ctx.beginPath();
-            ctx.arc(particle.pos.x, particle.pos.y, particle.size, 0, 2 * Math.PI);
-            ctx.fill();
-        }
+        return particle;
     }
 }

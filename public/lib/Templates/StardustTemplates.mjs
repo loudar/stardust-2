@@ -96,6 +96,11 @@ export class StardustTemplates {
                 materials.push(material);
                 ThreeJsRenderer.render3DBar(i, data, boxGeometry, material);
                 break;
+            case "particles":
+                const materialParticles = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
+                materials.push(materialParticles);
+                ThreeJsRenderer.render3dParticle(i, data, width * 1.5, width * 1.5, sphereGeometry, materialParticles);
+                break;
             case "grid":
                 const material2 = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(material2);
@@ -106,6 +111,15 @@ export class StardustTemplates {
 
         let cameraRadius, positionByTime;
         switch (type) {
+        case "particles":
+            cameraRadius = 0; // height * 0.5;
+            positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            window.camera.position.z = positionByTime.x;
+            window.camera.position.x = positionByTime.y;
+            window.camera.position.y = 200 + (350 * (1 - Math.sin(Date.now() / 5000)));
+            window.camera.lookAt(new THREE.Vector3(0, -200, 0));
+            window.camera.rotation.z = Math.PI * (Date.now() / 20000);
+            break;
         case "spiral":
             cameraRadius = 0; // height * 0.5;
             positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);

@@ -2,6 +2,6 @@ export class VisualizerState {
     sourceData = [];
     data = [];
     frameType = "particles";
-    renderType = "2D";
+    renderType = "3D";
     debug = false;
 }
