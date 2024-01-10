@@ -212,15 +212,16 @@ export class ThreeJsRenderer {
         }
 
         const velocityFactor = 0.3;
-        const veloMod = lightness * velocityFactor;
+        const value = data[i] / 255;
+        const veloMod = value * velocityFactor;
         const particle = window.particles[i];
-        particle.pos.x += particle.vel.x * lightness * 2;
-        particle.pos.y += particle.vel.y * lightness * 2;
+        particle.pos.x += particle.vel.x * value * 2;
+        particle.pos.y += particle.vel.y * value * 2;
         particle.pos.z = 0;
         particle.vel.x += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.y += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.z = 0;
-        particle.size = 12 * (lightness ** 2);
+        particle.size = 10 * (value ** 2);
         particle.vel.x = Math.min(particle.size, particle.vel.x);
         particle.vel.y = Math.min(particle.size, particle.vel.y);
 
