@@ -171,4 +171,20 @@ export class ThreeJsRenderer {
         cube.scale.x = size;
         window.scene.add(cube);
     }
+
+    static renderFlimmerCell(ctx, i, data, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
+        const rows = Math.floor(Math.sqrt(data.length));
+        const cols = Math.ceil(data.length / rows);
+        const singleHeight = height / rows;
+        const singleCellWidth = width / cols;
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const x = singleCellWidth * col;
+        const y = singleHeight * row;
+        let realY = this.getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center);
+        const value = data[i] / 255;
+        const actualHeight = singleHeight * value * 0.1;
+        const xInset = (singleCellWidth * (1 - value));
+        ctx.fillRect(x + xInset, realY - (value * singleHeight) + actualHeight, singleCellWidth - (2 * xInset), actualHeight);
+    }
 }

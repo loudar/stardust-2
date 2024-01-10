@@ -1,7 +1,7 @@
 export class VisualizerState {
     sourceData = [];
     data = [];
-    frameType = "spiral";
-    renderType = "3D";
+    frameType = "flimmer";
+    renderType = "2D";
     debug = false;
 }

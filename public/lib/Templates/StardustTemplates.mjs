@@ -90,6 +90,7 @@ export class StardustTemplates {
                 ThreeJsRenderer.render3DSpiral(i, data, lightness, sphereGeometry, materialSpiral);
                 break;
             case "bars":
+            case "flimmer":
             case "circle":
                 const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(material);
@@ -115,6 +116,7 @@ export class StardustTemplates {
             window.camera.rotation.z = Math.PI * (Date.now() / 20000);
             break;
         case "bars":
+        case "flimmer":
         case "circle":
             cameraRadius = 500;
             positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
@@ -204,6 +206,10 @@ export class StardustTemplates {
             case "grid":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
                 ThreeJsRenderer.renderGridCell(ctx, i, data, width, height, center, lightness, 1, 2);
+                break;
+            case "flimmer":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
+                ThreeJsRenderer.renderFlimmerCell(ctx, i, data, width, height, center, lightness, 1, 2);
                 break;
             case "circle":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 2);
