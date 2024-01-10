@@ -201,7 +201,7 @@ export class ThreeJsRenderer {
         });
     }
 
-    static renderParticle(ctx, i, data, width, height, center, lightness) {
+    static renderParticle(ctx, i, data, width, height, center) {
         window.particles = window.particles ?? [];
         if (window.particles.length < data.length) {
             for (let i = 0; i < data.length; i++) {
@@ -221,9 +221,13 @@ export class ThreeJsRenderer {
         particle.vel.x += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.y += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.z = 0;
-        particle.size = 10 * (value ** 2);
+        particle.size = 8 * (value ** 2);
         particle.vel.x = Math.max(Math.min(particle.size, particle.vel.x), -particle.size);
         particle.vel.y = Math.max(Math.min(particle.size, particle.vel.y), -particle.size);
+        const centerForce = 0.00002;
+        const screenratio = width / height;
+        particle.vel.x += (center.x - particle.pos.x) * centerForce * (1 / screenratio);
+        particle.vel.y += (center.y - particle.pos.y) * centerForce * screenratio;
 
         if (particle.pos.x < 0) {
             particle.pos.x = width;
