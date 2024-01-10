@@ -172,7 +172,7 @@ export class ThreeJsRenderer {
         window.scene.add(cube);
     }
 
-    static renderFlimmerCell(ctx, i, data, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
+    static renderFlimmerCell(ctx, i, data, width, height, center, lightness, gridAlignment = "bottom") {
         const rows = Math.floor(Math.sqrt(data.length));
         const cols = Math.ceil(data.length / rows);
         const singleHeight = height / rows;
@@ -186,5 +186,59 @@ export class ThreeJsRenderer {
         const actualHeight = singleHeight * value * 0.1;
         const xInset = (singleCellWidth * (1 - value));
         ctx.fillRect(x + xInset, realY - (value * singleHeight) + actualHeight, singleCellWidth - (2 * xInset), actualHeight);
+    }
+
+    static addParticle(type, x, y, z) {
+        window.particles.push({
+            type,
+            pos: {
+                x, y, z
+            },
+            vel: {
+                x: 0, y: 0, z: 0
+            },
+            size: 0
+        });
+    }
+
+    static renderParticle(ctx, i, data, width, height, center, lightness) {
+        window.particles = window.particles ?? [];
+        if (window.particles.length < data.length) {
+            for (let i = 0; i < data.length; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                this.addParticle("circle", x, y, 0);
+            }
+        }
+
+        const velocityFactor = 0.3;
+        const veloMod = lightness * velocityFactor;
+        const particle = window.particles[i];
+        particle.pos.x += particle.vel.x * lightness * 2;
+        particle.pos.y += particle.vel.y * lightness * 2;
+        particle.pos.z = 0;
+        particle.vel.x += -veloMod + (Math.random() * veloMod * 2);
+        particle.vel.y += -veloMod + (Math.random() * veloMod * 2);
+        particle.vel.z = 0;
+        particle.size = 10 * lightness;
+
+        if (particle.pos.x < 0) {
+            particle.pos.x = width;
+        }
+        if (particle.pos.x > width) {
+            particle.pos.x = 0;
+        }
+        if (particle.pos.y < 0) {
+            particle.pos.y = height;
+        }
+        if (particle.pos.y > height) {
+            particle.pos.y = 0;
+        }
+
+        if (particle.type === "circle") {
+            ctx.beginPath();
+            ctx.arc(particle.pos.x, particle.pos.y, particle.size, 0, 2 * Math.PI);
+            ctx.fill();
+        }
     }
 }

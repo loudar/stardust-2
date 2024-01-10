@@ -209,7 +209,11 @@ export class StardustTemplates {
                 break;
             case "flimmer":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                ThreeJsRenderer.renderFlimmerCell(ctx, i, data, width, height, center, lightness, 1, 2);
+                ThreeJsRenderer.renderFlimmerCell(ctx, i, data, width, height, center, lightness);
+                break;
+            case "particles":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
+                ThreeJsRenderer.renderParticle(ctx, i, data, width, height, center, lightness);
                 break;
             case "circle":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 2);
