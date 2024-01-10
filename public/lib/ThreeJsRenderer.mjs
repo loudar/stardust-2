@@ -221,6 +221,8 @@ export class ThreeJsRenderer {
         particle.vel.y += -veloMod + (Math.random() * veloMod * 2);
         particle.vel.z = 0;
         particle.size = 12 * (lightness ** 2);
+        particle.vel.x = Math.min(particle.size, particle.vel.x);
+        particle.vel.y = Math.min(particle.size, particle.vel.y);
 
         if (particle.pos.x < 0) {
             particle.pos.x = width;
