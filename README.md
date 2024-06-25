@@ -15,3 +15,5 @@ Go to [http://localhost:3333/index.html](http://localhost:3333/index.html) to vi
 `ArrowLeft` for previous viz
 
 `Space` to toggle between 2D and 3D view
+
+`ArrowUp` to toggle UI

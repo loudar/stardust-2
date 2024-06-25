@@ -4,8 +4,9 @@ import {VisualizerState} from "./lib/VisualizerState.mjs";
 import {KeyboardHandler} from "./lib/KeyboardHandler.mjs";
 
 const domNodeId = "renderer";
+const uiNodeId = "ui";
 const visualizerState = new FjsObservable(new VisualizerState());
-const renderer = new StardustRenderer(domNodeId);
+const renderer = new StardustRenderer(domNodeId, uiNodeId);
 renderer.render(visualizerState);
 
 const keyboardHandler = new KeyboardHandler(visualizerState);

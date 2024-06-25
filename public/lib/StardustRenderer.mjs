@@ -1,21 +1,25 @@
 import {AudioAnalyzer} from "./AudioAnalyzer.mjs";
 import {StardustTemplates} from "./Templates/StardustTemplates.mjs";
+import {StardustUiRenderer} from "./StardustUiRenderer.mjs";
 
 export class StardustRenderer {
     domNode = null;
+    uiNode = null;
     rendering = false;
     skippedFrames = 0;
 
-    constructor(domNodeId) {
+    constructor(domNodeId, uiNodeId) {
         const domNode = document.getElementById(domNodeId);
         if (!domNode) {
             throw new Error(`DOM node with id ${domNodeId} not found`);
         }
         this.domNode = domNode;
+        this.uiRenderer = new StardustUiRenderer(uiNodeId);
     }
 
     render(visualizerState) {
         this.initializeVisualization(visualizerState);
+        this.uiRenderer.initialize(visualizerState);
     }
 
     initializeVisualization(visualizerState) {

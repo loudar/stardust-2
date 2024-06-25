@@ -5,6 +5,7 @@ export class KeyboardHandler {
         nextFrameType: ["ArrowRight"],
         previousFrameType: ["ArrowLeft"],
         toggle3D: [" "],
+        toggleUi: ["ArrowUp"],
     };
 
     constructor(visualizerState) {
@@ -27,6 +28,11 @@ export class KeyboardHandler {
             this.visualizerState.value = {
                 ...this.visualizerState.value,
                 renderType: this.toggle3D()
+            };
+        } else if (this.hotkeys.toggleUi.includes(key)) {
+            this.visualizerState.value = {
+                ...this.visualizerState.value,
+                uiShown: !this.visualizerState.value.uiShown
             };
         }
     }

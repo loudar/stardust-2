@@ -4,4 +4,5 @@ export class VisualizerState {
     frameType = "particles";
     renderType = "3D";
     debug = false;
+    uiShown = true;
 }

@@ -1,20 +1,21 @@
 export class AudioAnalyzer {
     static getFrequencyData(buffer) {
+        const highCutPercentage = 0.75;
+        const highCutForAverage = 0.5;
+
         const data = new Uint8Array(buffer.frequencyBinCount);
         buffer.getByteFrequencyData(data);
         const newData = AudioAnalyzer.adjustDataLog(data);
-        let sliced = newData.slice(0, Math.floor(newData.length * 0.75));
-        const average = sliced.slice(Math.floor(sliced.length * 0.5)).reduce((a, b) => a + b, 0) / sliced.length;
-        if (!window.below50) {
-            window.below50 = 0;
-        }
+        let sliced = newData.slice(0, Math.floor(newData.length * highCutPercentage));
+        const average = sliced.slice(Math.floor(sliced.length * highCutForAverage)).reduce((a, b) => a + b, 0) / sliced.length;
         if (average < 50) {
-            window.below50++;
+            window.below50 = window.below50 ? window.below50 + 1 : 1;
         } else {
             window.below50 = 0;
         }
         if (window.below50 > 50) {
-            sliced = sliced.slice(0, Math.floor(sliced.length * 0.5));
+            // Adjusts the frequency data to remove the high frequencies in loud parts of the song, results in a cleaner visualization
+            sliced = sliced.slice(0, Math.floor(sliced.length * highCutForAverage));
         }
         return sliced;
     }
