@@ -2,7 +2,8 @@ import {FJS} from "@targoninc/fjs";
 import {Color} from "../Color.mjs";
 import * as THREE from "three";
 import {TextGeometry} from "three/addons";
-import {ThreeJsRenderer} from "../ThreeJsRenderer.mjs";
+import {Renderer3D} from "../Renderers/Renderer3D.mjs";
+import {Renderer2D} from "../Renderers/Renderer2D.mjs";
 
 export class StardustTemplates {
     /**
@@ -27,7 +28,7 @@ export class StardustTemplates {
         const max = Math.max(...data, 1);
         const maxForColor = max * 1.2;
 
-        const peakRelevantData = data.slice(0, Math.floor(data.length * .5));
+        const peakRelevantData = data.slice(0, Math.floor(data.length * .2));
         const currentAverage = peakRelevantData.reduce((acc, val) => acc + val, 0) / peakRelevantData.length;
         let previousFrames = window.previousFrames || [];
 
@@ -40,22 +41,7 @@ export class StardustTemplates {
 
         const previousAverage = previousFrames.reduce((acc, val) => acc + val, 0) / previousFrames.length;
 
-        const isPeak = currentAverage > previousAverage * 1.05;
-        if (isPeak) {
-            window.lastPeak = new Date().getTime();
-        } else {
-            if (!window.lastPeak) {
-                window.lastPeak = new Date().getTime();
-            }
-        }
-        window.previousAverage = currentAverage;
-
-        if (!window.peakSwitch) {
-            window.peakSwitch = false;
-        }
-        if (isPeak) {
-            window.peakSwitch = !window.peakSwitch;
-        }
+        const isPeak = this.peakDetection(currentAverage, previousAverage);
 
         const secondsPerCycle = 20;
         let hueShiftByTime = Math.sin(Date.now() / (1000 * secondsPerCycle));
@@ -69,6 +55,20 @@ export class StardustTemplates {
         default:
             return StardustTemplates.frame2D(data, currentAverage, isPeak, debug, type, hueShiftByTime, max, maxForColor);
         }
+    }
+
+    static peakDetection(currentAverage, previousAverage) {
+        const isPeak = currentAverage > previousAverage * 1.05;
+        window.previousAverage = currentAverage;
+
+        if (!window.peakSwitch) {
+            window.peakSwitch = false;
+        }
+        if (isPeak) {
+            window.peakSwitch = !window.peakSwitch;
+        }
+        this.setPeakHistory(isPeak);
+        return isPeak;
     }
 
     static frame3D(data, debug, type = "bars", hueShiftByTime = 0, max = 255, maxForColor = 1) {
@@ -94,24 +94,24 @@ export class StardustTemplates {
             case "spiral":
                 const materialSpiral = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(materialSpiral);
-                ThreeJsRenderer.render3DSpiral(i, data, lightness, sphereGeometry, materialSpiral);
+                Renderer3D.render3DSpiral(i, data, lightness, sphereGeometry, materialSpiral);
                 break;
             case "bars":
             case "flimmer":
             case "circle":
                 const material = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(material);
-                ThreeJsRenderer.render3DBar(i, data, boxGeometry, material);
+                Renderer3D.render3DBar(i, data, boxGeometry, material);
                 break;
             case "particles":
                 const materialParticles = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(materialParticles);
-                ThreeJsRenderer.render3dParticle(i, data, width * 1.5, width * 1.5, sphereGeometry, materialParticles);
+                Renderer3D.render3DParticle(i, data, width * 1.5, width * 1.5, sphereGeometry, materialParticles);
                 break;
             case "grid":
                 const material2 = new THREE.MeshBasicMaterial({ color: Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3, true) });
                 materials.push(material2);
-                ThreeJsRenderer.render3DGridItem(i, data, height, width, boxGeometry, material2);
+                Renderer3D.render3DGridItem(i, data, height, width, boxGeometry, material2);
                 break;
             }
         }
@@ -120,7 +120,7 @@ export class StardustTemplates {
         switch (type) {
         case "particles":
             cameraRadius = 0; // height * 0.5;
-            positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            positionByTime = Renderer2D.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.x = positionByTime.y;
             window.camera.position.y = 200 + (350 * (1 - Math.sin(Date.now() / 5000)));
@@ -129,7 +129,7 @@ export class StardustTemplates {
             break;
         case "spiral":
             cameraRadius = 0; // height * 0.5;
-            positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            positionByTime = Renderer2D.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.x = positionByTime.y;
             window.camera.position.y = 750;
@@ -140,7 +140,7 @@ export class StardustTemplates {
         case "flimmer":
         case "circle":
             cameraRadius = 500;
-            positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            positionByTime = Renderer2D.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.y = positionByTime.y;
             window.camera.position.x = 0;
@@ -148,7 +148,7 @@ export class StardustTemplates {
             break;
         case "grid":
             cameraRadius = 0; // height * 0.5;
-            positionByTime = ThreeJsRenderer.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
+            positionByTime = Renderer2D.getCirclePositionByTime(Date.now() / 10000, cameraRadius);
             window.camera.position.z = positionByTime.x;
             window.camera.position.x = positionByTime.y;
             window.camera.position.y = 220;
@@ -159,7 +159,7 @@ export class StardustTemplates {
 
         window.renderer.render(window.scene, window.camera);
         if (debug) {
-            ThreeJsRenderer.add3DGrid();
+            Renderer3D.add3DGrid();
         }
         materials.forEach(material => material.dispose());
         window.renderer.domElement.id = "frame";
@@ -199,16 +199,16 @@ export class StardustTemplates {
         window.scene.add(mesh);
     }
 
-    static setPeakHistory(timeSinceLastPeak, isPeak) {
+    static setPeakHistory(isPeak) {
         if (!window.peakHistory) {
             window.peakHistory = [];
         }
         if (isPeak) {
-            window.peakHistory.push(timeSinceLastPeak);
+            window.peakHistory.push(new Date().getTime());
         } else {
-            window.peakHistory[window.peakHistory.length - 1] = timeSinceLastPeak;
+            window.peakHistory[window.peakHistory.length - 1] = new Date().getTime();
         }
-        if (window.peakHistory.length >= 100) {
+        if (window.peakHistory.length >= 50) {
             window.peakHistory.shift();
         }
     }
@@ -224,12 +224,8 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
-        let timeSinceLastPeak = new Date().getTime() - window.lastPeak;
-        this.setPeakHistory(timeSinceLastPeak, isPeak);
-        if (timeSinceLastPeak === 0) {
-            timeSinceLastPeak = 1;
-        }
         const timeTresh = 50;
+        const timeSinceLastPeak = new Date().getTime() - window.peakHistory[window.peakHistory.length - 1];
         const timeFactor = (timeSinceLastPeak < timeTresh) ? ((timeTresh % timeSinceLastPeak) / timeTresh) * 0.5 : 0;
 
         for (let i = 0; i < data.length; i++) {
@@ -247,31 +243,31 @@ export class StardustTemplates {
             switch (type) {
             case "grid":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                ThreeJsRenderer.renderGridCell(ctx, i, data, width, height, center, lightness, 1, 2);
+                Renderer2D.renderGridCell(ctx, i, data, width, height, center, lightness, 1, 2);
                 break;
             case "flimmer":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                ThreeJsRenderer.renderFlimmerCell(ctx, i, data, width, height, center, lightness);
+                Renderer2D.renderFlimmerCell(ctx, i, data, width, height, center, lightness);
                 break;
             case "particles":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                ThreeJsRenderer.renderParticle(ctx, i, data, width, height, center);
+                Renderer2D.renderParticle(ctx, i, data, width, height, center);
                 break;
             case "circle":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 2);
-                ThreeJsRenderer.renderCircle(ctx, i, data, width, height, max, 15, lightness, center);
+                Renderer2D.renderCircle(ctx, i, data, width, height, max, 15, lightness, center);
                 break;
             case "bars":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 3);
-                ThreeJsRenderer.renderRectangle(ctx, i, data, width, height, lightness);
+                Renderer2D.renderRectangle(ctx, i, data, width, height, lightness);
                 break;
             case "spiral":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 5);
-                ThreeJsRenderer.renderSpiral(ctx, i, data, width, height, lightness, center);
+                Renderer2D.renderSpiral(ctx, i, data, width, height, lightness, center);
                 break;
             case "peakgrid":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + (hueShiftByLoudness * .5), timeFactor === 0 ? lightness ** 3 : timeFactor);
-                ThreeJsRenderer.renderPeakGrid(ctx, i, data, timeSinceLastPeak, timeTresh, width, height, center, lightness, 1, 2);
+                Renderer2D.renderPeakGrid(ctx, i, data, timeSinceLastPeak, timeTresh, width, height, center, lightness, 1, 2);
                 break;
             }
         }
@@ -279,7 +275,7 @@ export class StardustTemplates {
         switch (type) {
         case "peakhistory":
             ctx.strokeStyle = Color.rainbow(hueShiftByTime, .5);
-            ThreeJsRenderer.renderPeakHistory(ctx, data, window.peakHistory, center);
+            Renderer2D.renderPeakHistory(ctx, data, window.peakHistory, center, currentAverage);
             break;
         }
 
@@ -290,6 +286,6 @@ export class StardustTemplates {
     }
 
     static addDebugInfo2D(data, ctx) {
-        ThreeJsRenderer.renderAverageText(data, ctx);
+        Renderer2D.renderAverageText(data, ctx);
     }
 }
