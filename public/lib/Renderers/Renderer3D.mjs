@@ -1,6 +1,40 @@
 import * as THREE from "three";
+import {TextGeometry} from "three/addons";
 
 export class Renderer3D {
+    static initialize3dFrame() {
+        const width = document.body.clientWidth;
+        const height = document.body.clientHeight;
+        if (!window.threeJsInitialized) {
+            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
+            window.renderer = new THREE.WebGLRenderer();
+            window.threeJsInitialized = true;
+        }
+        window.scene = new THREE.Scene();
+        window.renderer.clear();
+        window.renderer.setSize(width, height);
+    }
+
+    static addDebugText3D(text) {
+        const textGeometry = new TextGeometry(text, {
+            font: window.font,
+            size: 20,
+            height: 5,
+            curveSegments: 12,
+            bevelEnabled: true,
+            bevelThickness: 10,
+            bevelSize: 8,
+            bevelOffset: 0,
+            bevelSegments: 5
+        });
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const mesh = new THREE.Mesh(textGeometry, textMaterial);
+        mesh.position.x = -50;
+        mesh.position.y = 50;
+        mesh.position.z = 0;
+        window.scene.add(mesh);
+    }
+
     static add3DGrid() {
         const gridHelper = new THREE.GridHelper(1000, 100, 0xffffff, 0xffffff);
         window.scene.add(gridHelper);

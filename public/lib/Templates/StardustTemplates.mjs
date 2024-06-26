@@ -28,7 +28,7 @@ export class StardustTemplates {
         const max = Math.max(...data, 1);
         const maxForColor = max * 1.2;
 
-        const peakRelevantData = data.slice(0, Math.floor(data.length * .2));
+        const peakRelevantData = data.slice(0, Math.floor(data.length * .4));
         const currentAverage = peakRelevantData.reduce((acc, val) => acc + val, 0) / peakRelevantData.length;
         let previousFrames = window.previousFrames || [];
 
@@ -58,7 +58,12 @@ export class StardustTemplates {
     }
 
     static peakDetection(currentAverage, previousAverage) {
-        const isPeak = currentAverage > previousAverage * 1.05;
+        const peakThreshold = 0.15;
+        let isPeak = currentAverage > previousAverage * (1 + peakThreshold);
+        if (window.peakHistory && window.peakHistory.length > 0) {
+            const timeSinceLastPeak = new Date().getTime() - window.peakHistory[window.peakHistory.length - 1];
+            isPeak = (currentAverage > previousAverage * (1 + peakThreshold)) && (timeSinceLastPeak > 100);
+        }
         window.previousAverage = currentAverage;
 
         if (!window.peakSwitch) {
@@ -72,7 +77,7 @@ export class StardustTemplates {
     }
 
     static frame3D(data, debug, type = "bars", hueShiftByTime = 0, max = 255, maxForColor = 1) {
-        this.initialize3dFrame();
+        Renderer3D.initialize3dFrame();
         const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
         const sphereGeometry = new THREE.SphereGeometry(1, 32, 32);
         const materials = [];
@@ -166,47 +171,12 @@ export class StardustTemplates {
         return window.renderer.domElement;
     }
 
-    static initialize3dFrame() {
-        const width = document.body.clientWidth;
-        const height = document.body.clientHeight;
-        if (!window.threeJsInitialized) {
-            window.camera = new THREE.PerspectiveCamera(90, width / height, 0.1, 10000);
-            window.renderer = new THREE.WebGLRenderer();
-            window.threeJsInitialized = true;
-        }
-        window.scene = new THREE.Scene();
-        window.renderer.clear();
-        window.renderer.setSize(width, height);
-    }
-
-    static addDebugText3D(text) {
-        const textGeometry = new TextGeometry(text, {
-            font: window.font,
-            size: 20,
-            height: 5,
-            curveSegments: 12,
-            bevelEnabled: true,
-            bevelThickness: 10,
-            bevelSize: 8,
-            bevelOffset: 0,
-            bevelSegments: 5
-        });
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const mesh = new THREE.Mesh(textGeometry, textMaterial);
-        mesh.position.x = -50;
-        mesh.position.y = 50;
-        mesh.position.z = 0;
-        window.scene.add(mesh);
-    }
-
     static setPeakHistory(isPeak) {
         if (!window.peakHistory) {
             window.peakHistory = [];
         }
         if (isPeak) {
             window.peakHistory.push(new Date().getTime());
-        } else {
-            window.peakHistory[window.peakHistory.length - 1] = new Date().getTime();
         }
         if (window.peakHistory.length >= 50) {
             window.peakHistory.shift();
@@ -225,7 +195,10 @@ export class StardustTemplates {
             y: height / 2
         };
         const timeTresh = 50;
-        const timeSinceLastPeak = new Date().getTime() - window.peakHistory[window.peakHistory.length - 1];
+        let timeSinceLastPeak = new Date().getTime() - window.peakHistory[window.peakHistory.length - 1];
+        if (timeSinceLastPeak === 0) {
+            timeSinceLastPeak = 1;
+        }
         const timeFactor = (timeSinceLastPeak < timeTresh) ? ((timeTresh % timeSinceLastPeak) / timeTresh) * 0.5 : 0;
 
         for (let i = 0; i < data.length; i++) {
@@ -274,7 +247,8 @@ export class StardustTemplates {
         
         switch (type) {
         case "peakhistory":
-            ctx.strokeStyle = Color.rainbow(hueShiftByTime, .5);
+            ctx.strokeStyle = Color.rainbow(hueShiftByTime, (currentAverage / 255) ** 2);
+            ctx.fillStyle = Color.rainbow(hueShiftByTime, (currentAverage / 255) ** 2);
             Renderer2D.renderPeakHistory(ctx, data, window.peakHistory, center, currentAverage);
             break;
         }

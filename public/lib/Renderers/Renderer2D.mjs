@@ -174,12 +174,16 @@ export class Renderer2D {
     static renderPeakHistory(ctx, data, peakHistory, center, currentAverage) {
         const now = new Date().getTime();
         for (let j = 0; j < peakHistory.length; j++) {
-            const timeAgo = now - peakHistory[j];
-            const radius =timeAgo + (currentAverage / 255) * center.x * .05;
+            const timeAgo = (now - peakHistory[j]) * 0.3;
+            const radius = timeAgo + (currentAverage / 255) * center.x * .1;
             ctx.beginPath();
             ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-            ctx.srtokeWeight = (1 - (j / peakHistory.length)) * 25;
-            ctx.stroke();
+            ctx.lineWidth = 10 - (timeAgo / 100);
+            if (j === peakHistory.length - 1) {
+                ctx.fill();
+            } else {
+                ctx.stroke();
+            }
         }
     }
 }
