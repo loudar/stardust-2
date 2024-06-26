@@ -6,18 +6,49 @@ export class AudioAnalyzer {
         const data = new Uint8Array(buffer.frequencyBinCount);
         buffer.getByteFrequencyData(data);
         const newData = AudioAnalyzer.adjustDataLog(data);
-        let sliced = newData.slice(0, Math.floor(newData.length * highCutPercentage));
-        const average = sliced.slice(Math.floor(sliced.length * highCutForAverage)).reduce((a, b) => a + b, 0) / sliced.length;
-        if (average < 50) {
+        let highCut = AudioAnalyzer.highCutData(newData, highCutPercentage);
+        const currentAverage = AudioAnalyzer.getAverageOfFrequencyData(highCut, highCutForAverage);
+        //AudioAnalyzer.cacheFrequencyData(newData);
+        if (currentAverage < 50) {
             window.below50 = window.below50 ? window.below50 + 1 : 1;
         } else {
             window.below50 = 0;
         }
         if (window.below50 > 50) {
             // Adjusts the frequency data to remove the high frequencies in loud parts of the song, results in a cleaner visualization
-            sliced = sliced.slice(0, Math.floor(sliced.length * highCutForAverage));
+            highCut = highCut.slice(0, Math.floor(highCut.length * highCutForAverage));
         }
-        return sliced;
+        return highCut;
+    }
+
+    static averageOfLast(count = 100) {
+        if (!window.frequencyDataCache) {
+            return 0;
+        }
+        const averages = window.frequencyDataCache.map(data => {
+            let highCut = AudioAnalyzer.highCutData(data, 0.75);
+            return AudioAnalyzer.getAverageOfFrequencyData(highCut, count);
+        });
+        return averages.reduce((a, b) => a + b, 0) / averages.length;
+    }
+
+    static highCutData(data, cutAt = 0.75) {
+        return data.slice(0, Math.floor(data.length * cutAt));
+    }
+
+    static getAverageOfFrequencyData(data, highCutAt = 0.5) {
+        const cut = AudioAnalyzer.highCutData(data, highCutAt);
+        return cut.reduce((a, b) => a + b, 0) / data.length;
+    }
+
+    static cacheFrequencyData(data) {
+        if (!window.frequencyDataCache) {
+            window.frequencyDataCache = [];
+        }
+        window.frequencyDataCache.push(data);
+        if (window.frequencyDataCache.length > 100) {
+            window.frequencyDataCache.shift();
+        }
     }
 
     static adjustDataLog(data) {

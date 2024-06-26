@@ -41,6 +41,13 @@ export class StardustTemplates {
         const previousAverage = previousFrames.reduce((acc, val) => acc + val, 0) / previousFrames.length;
 
         const isPeak = currentAverage > previousAverage * 1.1;
+        if (isPeak) {
+            window.lastPeak = new Date().getTime();
+        } else {
+            if (!window.lastPeak) {
+                window.lastPeak = new Date().getTime();
+            }
+        }
         window.previousAverage = currentAverage;
 
         if (!window.peakSwitch) {
@@ -60,7 +67,7 @@ export class StardustTemplates {
             return StardustTemplates.frame3D(data, debug, type, hueShiftByTime, max, maxForColor);
         case "2D":
         default:
-            return StardustTemplates.frame2D(data, debug, type, hueShiftByTime, max, maxForColor);
+            return StardustTemplates.frame2D(data, isPeak, debug, type, hueShiftByTime, max, maxForColor);
         }
     }
 
@@ -192,7 +199,7 @@ export class StardustTemplates {
         window.scene.add(mesh);
     }
 
-    static frame2D(data, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
+    static frame2D(data, isPeak, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
         const width = document.body.clientWidth;
         const height = document.body.clientHeight;
         const canvas = StardustTemplates.canvas(width, height);
@@ -203,6 +210,12 @@ export class StardustTemplates {
             x: width / 2,
             y: height / 2
         };
+        let timeSinceLastPeak = new Date().getTime() - window.lastPeak;
+        if (timeSinceLastPeak === 0) {
+            timeSinceLastPeak = 1;
+        }
+        const timeTresh = 50;
+        const timeFactor = (timeSinceLastPeak < timeTresh) ? ((timeTresh % timeSinceLastPeak) / timeTresh) * 0.5 : 0;
 
         for (let i = 0; i < data.length; i++) {
             if (data[i] === 0) {
@@ -240,6 +253,10 @@ export class StardustTemplates {
             case "spiral":
                 ctx.fillStyle = Color.rainbow(hueShiftByTime + hueShiftByIndex + hueShiftByLoudness, lightness ** 5);
                 ThreeJsRenderer.renderSpiral(ctx, i, data, width, height, lightness, center);
+                break;
+            case "peakgrid":
+                ctx.fillStyle = Color.rainbow(hueShiftByTime + (hueShiftByLoudness * .5), timeFactor === 0 ? lightness ** 3 : timeFactor);
+                ThreeJsRenderer.renderPeakGrid(ctx, i, data, timeSinceLastPeak, timeTresh, width, height, center, lightness, 1, 2);
                 break;
             }
         }

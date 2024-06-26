@@ -1,8 +1,8 @@
 export class VisualizerState {
     sourceData = [];
     data = [];
-    frameType = "particles";
-    renderType = "3D";
+    frameType = "peakgrid";
+    renderType = "2D";
     debug = false;
     uiShown = true;
 }

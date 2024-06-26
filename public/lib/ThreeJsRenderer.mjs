@@ -45,6 +45,8 @@ export class ThreeJsRenderer {
         return realY;
     }
 
+    static borderThickness = 2;
+
     static renderGridCell(ctx, i, data, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
         const rows = Math.floor(Math.sqrt(data.length));
         const cols = Math.ceil(data.length / rows);
@@ -74,11 +76,10 @@ export class ThreeJsRenderer {
             yInsetRounded = 0;
         }
         if (lightness < 0.65) {
-            const borderThickness = 2;
-            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
-            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), borderThickness);
-            ctx.fillRect(x + xInsetRounded, realY + heightWithoutInset - yInsetRounded - borderThickness, widthWithoutInset - (xInsetRounded * 2), borderThickness);
-            ctx.fillRect(x + widthWithoutInset - xInsetRounded - borderThickness, realY + yInsetRounded, borderThickness, heightWithoutInset - (yInsetRounded * 2));
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, ThreeJsRenderer.borderThickness, heightWithoutInset - (yInsetRounded * 2));
+            ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), ThreeJsRenderer.borderThickness);
+            ctx.fillRect(x + xInsetRounded, realY + heightWithoutInset - yInsetRounded - ThreeJsRenderer.borderThickness, widthWithoutInset - (xInsetRounded * 2), ThreeJsRenderer.borderThickness);
+            ctx.fillRect(x + widthWithoutInset - xInsetRounded - ThreeJsRenderer.borderThickness, realY + yInsetRounded, ThreeJsRenderer.borderThickness, heightWithoutInset - (yInsetRounded * 2));
         } else {
             ctx.fillRect(x + xInsetRounded, realY + yInsetRounded, widthWithoutInset - (xInsetRounded * 2), heightWithoutInset - (yInsetRounded * 2));
         }
@@ -276,5 +277,27 @@ export class ThreeJsRenderer {
             particle.pos.y = center.y - (height * 0.5);
         }
         return particle;
+    }
+
+    static renderPeakGrid(ctx, i, data, timeSinceLastPeak, timeTresh, width, height, center, lightness, insetStep, baseInset, gridAlignment = "bottom") {
+        const rows = Math.floor(Math.sqrt(data.length));
+        const cols = Math.ceil(data.length / rows);
+        const singleHeight = height / rows;
+        const singleCellWidth = width / cols;
+        const widthWithoutInset = singleCellWidth - (baseInset * 2);
+        const heightWithoutInset = singleHeight - (baseInset * 2);
+        const row = Math.floor(i / cols);
+        const col = i % cols;
+        const x = singleCellWidth * col;
+        const y = singleHeight * row;
+        let realY = this.getGridYPositionByAlignment(gridAlignment, height, y, singleHeight, row, center);
+        if (timeSinceLastPeak < timeTresh) {
+            ctx.fillRect(x, realY, ThreeJsRenderer.borderThickness, heightWithoutInset);
+            ctx.fillRect(x, realY, widthWithoutInset, ThreeJsRenderer.borderThickness);
+            ctx.fillRect(x, realY + heightWithoutInset - ThreeJsRenderer.borderThickness, widthWithoutInset, ThreeJsRenderer.borderThickness);
+            ctx.fillRect(x + widthWithoutInset - ThreeJsRenderer.borderThickness, realY, ThreeJsRenderer.borderThickness, heightWithoutInset);
+        } else {
+            ctx.fillRect(x, realY, widthWithoutInset, heightWithoutInset);
+        }
     }
 }
