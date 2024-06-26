@@ -300,4 +300,13 @@ export class ThreeJsRenderer {
             ctx.fillRect(x, realY, widthWithoutInset, heightWithoutInset);
         }
     }
+
+    static renderPeakHistory(ctx, data, peakHistory, center) {
+        for (let j = 0; j < peakHistory.length; j++) {
+            const radius = peakHistory[j];
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+    }
 }

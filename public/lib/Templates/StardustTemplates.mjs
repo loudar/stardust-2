@@ -27,7 +27,7 @@ export class StardustTemplates {
         const max = Math.max(...data, 1);
         const maxForColor = max * 1.2;
 
-        const peakRelevantData = data;
+        const peakRelevantData = data.slice(0, Math.floor(data.length * .5));
         const currentAverage = peakRelevantData.reduce((acc, val) => acc + val, 0) / peakRelevantData.length;
         let previousFrames = window.previousFrames || [];
 
@@ -40,7 +40,7 @@ export class StardustTemplates {
 
         const previousAverage = previousFrames.reduce((acc, val) => acc + val, 0) / previousFrames.length;
 
-        const isPeak = currentAverage > previousAverage * 1.1;
+        const isPeak = currentAverage > previousAverage * 1.05;
         if (isPeak) {
             window.lastPeak = new Date().getTime();
         } else {
@@ -67,7 +67,7 @@ export class StardustTemplates {
             return StardustTemplates.frame3D(data, debug, type, hueShiftByTime, max, maxForColor);
         case "2D":
         default:
-            return StardustTemplates.frame2D(data, isPeak, debug, type, hueShiftByTime, max, maxForColor);
+            return StardustTemplates.frame2D(data, currentAverage, isPeak, debug, type, hueShiftByTime, max, maxForColor);
         }
     }
 
@@ -199,7 +199,21 @@ export class StardustTemplates {
         window.scene.add(mesh);
     }
 
-    static frame2D(data, isPeak, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
+    static setPeakHistory(timeSinceLastPeak, isPeak) {
+        if (!window.peakHistory) {
+            window.peakHistory = [];
+        }
+        if (isPeak) {
+            window.peakHistory.push(timeSinceLastPeak);
+        } else {
+            window.peakHistory[window.peakHistory.length - 1] = timeSinceLastPeak;
+        }
+        if (window.peakHistory.length >= 100) {
+            window.peakHistory.shift();
+        }
+    }
+
+    static frame2D(data, currentAverage, isPeak, debug, type = "grid", hueShiftByTime = 0, max = 255, maxForColor = 1) {
         const width = document.body.clientWidth;
         const height = document.body.clientHeight;
         const canvas = StardustTemplates.canvas(width, height);
@@ -211,6 +225,7 @@ export class StardustTemplates {
             y: height / 2
         };
         let timeSinceLastPeak = new Date().getTime() - window.lastPeak;
+        this.setPeakHistory(timeSinceLastPeak, isPeak);
         if (timeSinceLastPeak === 0) {
             timeSinceLastPeak = 1;
         }
@@ -260,6 +275,14 @@ export class StardustTemplates {
                 break;
             }
         }
+        
+        switch (type) {
+        case "peakhistory":
+            ctx.strokeStyle = Color.rainbow(hueShiftByTime, .5);
+            ThreeJsRenderer.renderPeakHistory(ctx, data, window.peakHistory, center);
+            break;
+        }
+
         if (debug) {
             StardustTemplates.addDebugInfo2D(data, ctx);
         }
